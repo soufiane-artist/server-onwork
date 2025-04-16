@@ -22,6 +22,8 @@ const PORT = process.env.PORT || 5000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/subscribers', subRoutes);
@@ -34,6 +36,15 @@ app.use('/api/articles', articleRoutes);
 app.use('/api/deliveries', deliveryRoutes);
 
 // Error handling middleware
+const corsOptions = {
+  origin: ['http://localhost:8080', 'http://localhost:3000', 'https://onwork-agence.vercel.app'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
+
 
 // Connect to Database
 connectDB();
