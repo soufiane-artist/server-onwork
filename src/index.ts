@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
 import { connectDB } from './config/db';
 import authRoutes from './routes/auth.routes';
@@ -15,14 +15,27 @@ import deliveryRoutes from './routes/delivery.routes';
 dotenv.config();
 
 const app = express();
-app.use(cors());
 const PORT = process.env.PORT || 5000;
 
+// CORS configuration
+const corsOptions = {
+  origin: ['http://localhost:8080', 'http://localhost:3000', 'https://onwork-agence.vercel.app'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
 // Middleware
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-
+// Database connection
+connectDB().then(() => {
+  console.log('Connected to MongoDB');
+}).catch((err) => {
+  console.error('MongoDB connection error:', err);
+});
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -36,19 +49,21 @@ app.use('/api/articles', articleRoutes);
 app.use('/api/deliveries', deliveryRoutes);
 
 // Error handling middleware
-const corsOptions = {
-  origin: ['http://localhost:8080', 'http://localhost:3000', 'https://onwork-agence.vercel.app'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  credentials: true,
-  optionsSuccessStatus: 200
-};
-
-app.use(cors(corsOptions));
-
-
-// Connect to Database
-connectDB();
-
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Something went wrong!' });
 });
+
+// Health check endpoint
+app.get('/api/health', (req: Request, res: Response) => {
+  res.json({ status: 'ok' });
+});
+
+// Only start the server if we're not in a serverless environment
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+}
+
+export default app;
