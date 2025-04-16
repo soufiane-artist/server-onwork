@@ -11,6 +11,7 @@ import invoiceRoutes from './routes/invoice.routes';
 import articleRoutes from './routes/article.routes';
 import quoteRoutes from './routes/quote.routes';
 import deliveryRoutes from './routes/delivery.routes';
+import serverless from 'serverless-http';
 
 dotenv.config();
 
